@@ -8,6 +8,7 @@ var concat = require('gulp-concat');
 var runSeq = require('run-sequence');
 var gulpWebpack = require('gulp-webpack');
 var webpack = require('webpack');
+var  connect = require('gulp-connect');
 
 
 
@@ -78,4 +79,11 @@ gulp.task('build',function(done){
 	runSeq('clean','copyHTML','webpack','injectIndexHtml',done)
 });
 
+gulp.task('serve', function() {
+  connect.server({
+    root: 'dist',
+    livereload: true,
+	port: 8888
+  });
+});
 gulp.task('default', ['build']);
