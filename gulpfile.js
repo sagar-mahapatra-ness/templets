@@ -1,15 +1,15 @@
 var gulp = require('gulp');
 var mainBowerFiles = require('main-bower-files');
 var inject = require('gulp-inject');
-const filter = require('gulp-filter');
+var filter = require('gulp-filter');
 var clean = require('gulp-clean');
 var wiredep = require('wiredep').stream;
 var concat = require('gulp-concat');
 var runSeq = require('run-sequence');
 var gulpWebpack = require('gulp-webpack');
 var webpack = require('webpack');
-var  connect = require('gulp-connect');
-
+var connect = require('gulp-connect');
+var watch = require('gulp-watch');
 
 
 var path = {
@@ -43,8 +43,7 @@ gulp.task("webpack", function() {
     .pipe(gulp.dest(path.target+"/js/"))
 });
 
-var jsFilter = filter('app/bower_components/**/*.js');
-var cssFilter = filter('app/bower_components/**/*.css');
+
 
 gulp.task('clean',function() {
 return gulp.src(path.target+"/*.*", {read: false})
@@ -52,6 +51,8 @@ return gulp.src(path.target+"/*.*", {read: false})
 });
        
 gulp.task('copyLibraryAssets',function() {
+	var jsFilter = filter('app/bower_components/**/*.js');
+    var cssFilter = filter('app/bower_components/**/*.css');
    return gulp.src(mainBowerFiles())
        .pipe(jsFilter)
 	   .pipe(concat('vendor.js'))
@@ -63,9 +64,10 @@ gulp.task('copyLibraryAssets',function() {
 
 gulp.task('injectIndexHtml',['copyLibraryAssets'],function() {
    return gulp.src(path.target+'/index.html') 
-       .pipe(inject(gulp.src(path.target + '/libs/**/*.js',{read: false}),{name: 'bower',relative: true}))
+       .pipe(inject(gulp.src(path.target + '/libs/vendor.js',{read: false}),{name: 'bower',relative: true}))
 	   .pipe(inject(gulp.src(path.target + '/js/bundle.js',{read: false}),{name: 'webpack',relative: true}))
-       .pipe(gulp.dest(path.target));
+       .pipe(gulp.dest(path.target))
+	   .pipe(connect.reload());
 });
 
  
@@ -79,7 +81,11 @@ gulp.task('build',function(done){
 	runSeq('clean','copyHTML','webpack','injectIndexHtml',done)
 });
 
-gulp.task('serve', function() {
+gulp.task('watch', function() {
+    gulp.watch(['app/**/*.js','app/**/*.html','app/**/*.css','app/**/*.sass'], ['build'])
+});
+
+gulp.task('serve',['watch'],function() {
   connect.server({
     root: 'dist',
     livereload: true,
