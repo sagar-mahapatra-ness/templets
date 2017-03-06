@@ -1,1 +1,2 @@
-require('./module/dummy');
+var bootStrapApp = require('./module/BootStrapApp');
+bootStrapApp.init();
